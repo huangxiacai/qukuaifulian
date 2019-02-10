@@ -16,4 +16,7 @@ export default {
 body {
   background-color: #fbf9fe;
 }
+  .flianGroup .vux-no-group-title{
+    display: flex;
+  }
 </style>
