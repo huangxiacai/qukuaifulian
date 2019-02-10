@@ -1,24 +1,34 @@
 <template>
-  <div>
+  <div class="flianRegister">
     <Group gutter="0">
       <x-input placeholder="请输入手机号" :max="11" mask="99999999999" v-model="mobile"></x-input>
     </Group>
     <Group gutter="0" class="flianGroup">
       <x-input placeholder="请输入图形验证码" v-model="xcode"></x-input>
-      <x-img :src="xcodeImg" @click="getGenerateVerifyCode"></x-img>
+      <div class="flianImgWrapper" @click="getGenerateVerifyCode">
+        <spinner type="ios" v-if="loadingVcode"></spinner>
+        <x-img :src="xcodeImg" v-else></x-img>
+      </div>
     </Group>
-    <Group gutter="0">
+    <Group gutter="0" class="flianGroup">
       <x-input placeholder="请输入手机验证码" v-model="mobileCode"></x-input>
+      <x-button :disabled="isGetMobileCode" :class="isGetMobileCode?'isGetMobileCode':'flianCodeWrapper'"
+                @click.native="getMobileCode">{{getMoblieText}}
+      </x-button>
     </Group>
     <Group gutter="0">
       <x-input placeholder="请输入密码" type="password" v-model="passwrod"></x-input>
     </Group>
     <Group gutter="0">
-      <x-input placeholder="请输入密码" type="password" v-model="repassdword"></x-input>
+      <x-input placeholder="请确认密码" type="password" v-model="repassdword"></x-input>
     </Group>
     <Group gutter="0">
       <x-input placeholder="请输入推荐码(可不填)" v-model="referralCode"></x-input>
     </Group>
+    <div class="custom-primary-white_wrpper">
+      <x-button type="primary" class="custom-primary-white" @click.native="registerUser">注册</x-button>
+    </div>
+
   </div>
 </template>
 
@@ -26,11 +36,16 @@
   import {mapActions} from 'vuex'
   import config from '../config/index'
   import {common} from '../api/config'
+  import {validateTel,getDeviceType} from '../libs/util'
   export default {
-    name: "register",
-    data() {
+    name: 'register',
+    data () {
       return {
-        xcodeImg:null,
+        timelen: 60,
+        isGetMobileCode: false,//是否获取手机验证码
+        getMoblieText: '获取手机验证码',
+        loadingVcode: false,
+        xcodeImg: null,
         referralCode: null,
         mobile: null,
         xcode: null,
@@ -44,34 +59,142 @@
         'handleGenerateSmsCode',
         'handleGetGenderateVerifyCode',
         'checkVerifyCode',
-        'handleGetKey'
+        'handleGetKey',
+        'handleRegister'
       ]),
+      /**
+       * 获取手机验证码
+       */
+      registerUser(){
+        this.handleRegister(
+          {
+            phone:this.mobile,
+            loginPassword:this.password,
+            inviteCode:this.referralCode,
+            code:this.mobileCode,
+            type:getDeviceType
+          }
+        ).then(res=>{
+          if(res.code===20000){
+            this.$vux.toast.text('注册成功', 'top')
+          }else{
+            this.$vux.toast.text(res.msg, 'top')
+          }
+        });
+      },
+
+      getMobileCode () {
+        let vm = this
+        //先校验手机号
+        if (validateTel(this.mobile)) {
+          //获取签名接口
+          this.handleGetKey({}).then(res => {
+            if (res.code === 20000) {
+              //调用发送验证码接口
+              let baseurl = process.env.NODE_ENV !== 'production' ? config.baseUrl.dev : config.baseUrl.pro
+              this.$http.post(baseurl + '/' + common.generateSmsCode,
+                {
+                  mobile: vm.mobile,
+                  type: 'register',
+                }, {
+                  headers: {
+                    sign: res.data,
+                    'Content-Type': "application/x-www-form-urlencoded;charset=UTF-8",//+stringify
+                  }
+                }).then(r => {
+                if (r.data.code === 20000) {
+                  this.timelen = 60
+                  this.$vux.toast.text('验证码发送成功', 'top')
+                  setInterval(function () {
+                    if (vm.timelen === 0) {
+                      vm.isGetMobileCode = true
+                      vm.getMoblieText = '发送验证码'
+                    } else {
+                      vm.timelen--
+                    }
+                  }, 1000)
+                }
+                else {
+                  this.$vux.toast.text('获取验证码失败', 'top')
+                }
+              })
+
+            } else {
+              this.$vux.toast.text('签名失败', 'top')
+            }
+          })
+
+        } else {
+          //
+          this.$vux.toast.text('请填写的手机号', 'top')
+        }
+
+      },
       /**
        * 获取图片验证码
        */
-      getGenerateVerifyCode(){
-        let baseurl=process.env.NODE_ENV !== 'production'?config.baseUrl.dev:config.baseUrl.pro;
-        this.$http.get(baseurl+""+common.generateVerifyCode+"?type=register",
+      getGenerateVerifyCode () {
+        this.loadingVcode = true
+        let baseurl = process.env.NODE_ENV !== 'production' ? config.baseUrl.dev : config.baseUrl.pro
+        this.$http.get(baseurl + '' + common.generateVerifyCode + '?type=register',
           {
-            responseType:'arraybuffer',
-          }).then(res=>{
+            responseType: 'arraybuffer',
+          }).then(res => {
+          this.loadingVcode = false
           this.xcodeImg = 'data:image/png;base64,' + btoa(new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), ''))
         })
       }
     },
-    mounted() {
+    mounted () {
 
     },
-    created() {
-      this.getGenerateVerifyCode();
-
-      }
+    created () {
+      this.getGenerateVerifyCode()
     }
+  }
 </script>
 
 <style scoped>
-.flianGroup{
-  display: flex;
-  flex-direction: column;
+  .flianGroup {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .flianImgWrapper {
+    height: 40px;
+    width: 80px;
+    margin-right: 5px;
+    display: flex;
+    vertical-align: middle;
+    align-items: center;
+  }
+
+  .flianImgWrapper img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .flianCodeWrapper {
+    height: 24px;
+    width: 130px;
+    font-size: 12px;
+    color: #c48a96;
+    margin-right: 5px;
+  }
+
+  .isGetMobileCode {
+    height: 24px;
+    width: 130px;
+    font-size: 12px;
+    color: #dcdcdc;
+    margin-right: 5px;
+  }
+.custom-primary-white_wrpper{
+  margin-top: 75px;
+  padding:0 50px;
 }
+  .flianRegister{
+    padding-top:40px;
+
+  }
 </style>

@@ -502,3 +502,27 @@ export const getEnumArrText=(arr,value)=>{
   }
   return result;
 }
+/**
+ * 校验手机号
+ * @param mobile
+ */
+export const validateTel=(mobile)=>{
+  let TEL_REGEXP = /^1[3-9]\d{9}$/;
+  if(TEL_REGEXP.test(mobile)){
+    return true;
+  }
+  return false;
+};
+/**
+ * 判断浏览器类型
+ * @returns {string}
+ */
+export const getDeviceType=()=>{
+  if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+    return 'ios';
+  } else if (/(Android)/i.test(navigator.userAgent)) {  //判断Android
+    return 'android'
+  } else { //pc
+    return 'pc'
+  }
+}
