@@ -19,10 +19,7 @@
     background-color: #fca400;
   }
 
-  .flianGroup .vux-no-group-title {
-    display: flex;
-    align-items: center;
-  }
+
 
 
 </style>

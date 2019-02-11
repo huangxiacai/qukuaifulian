@@ -1,32 +1,32 @@
 <template>
   <div class="flianRegister">
     <Group gutter="0">
-      <x-input placeholder="请输入手机号" :max="11" mask="99999999999" v-model="mobile"></x-input>
+      <x-input placeholder="请输入手机号" required :max="11" mask="99999999999" v-model="mobile"></x-input>
     </Group>
     <Group gutter="0" class="flianGroup">
-      <x-input placeholder="请输入图形验证码" v-model="xcode"></x-input>
+      <x-input placeholder="请输入图形验证码" required v-model="xcode" @on-blur="checkCode"></x-input>
       <div class="flianImgWrapper" @click="getGenerateVerifyCode">
         <spinner type="ios" v-if="loadingVcode"></spinner>
         <x-img :src="xcodeImg" v-else></x-img>
       </div>
     </Group>
     <Group gutter="0" class="flianGroup">
-      <x-input placeholder="请输入手机验证码" v-model="mobileCode"></x-input>
+      <x-input placeholder="请输入手机验证码" required v-model="mobileCode"></x-input>
       <x-button :disabled="isGetMobileCode" :class="isGetMobileCode?'isGetMobileCode':'flianCodeWrapper'"
                 @click.native="getMobileCode">{{getMoblieText}}
       </x-button>
     </Group>
     <Group gutter="0">
-      <x-input placeholder="请输入密码" type="password" v-model="passwrod"></x-input>
+      <x-input placeholder="请输入密码" :min="6"  required type="password" v-model="password"></x-input>
     </Group>
     <Group gutter="0">
-      <x-input placeholder="请确认密码" type="password" v-model="repassdword"></x-input>
+      <x-input placeholder="请确认密码" :min="6" required type="password" v-model="repassdword"  @on-blur="checkPwd"></x-input>
     </Group>
     <Group gutter="0">
       <x-input placeholder="请输入推荐码(可不填)" v-model="referralCode"></x-input>
     </Group>
     <div class="custom-primary-white_wrpper">
-      <x-button type="primary" class="custom-primary-white" @click.native="registerUser">注册</x-button>
+      <x-button type="primary"  :disabled="BtnDisabled" class="custom-primary-white" @on-click="registerUser">注册</x-button>
     </div>
 
   </div>
@@ -50,15 +50,16 @@
         mobile: null,
         xcode: null,
         mobileCode: null,
-        passwrod: null,
-        repassdword: null
+        password: null,
+        repassdword: null,
+        BtnDisabled:true,
       }
     },
     methods: {
       ...mapActions([
         'handleGenerateSmsCode',
         'handleGetGenderateVerifyCode',
-        'checkVerifyCode',
+        'handleCheckVerifyCode',
         'handleGetKey',
         'handleRegister'
       ]),
@@ -70,7 +71,7 @@
           {
             phone:this.mobile,
             loginPassword:this.password,
-            inviteCode:this.referralCode,
+            inviteCode:this.xcode,
             code:this.mobileCode,
             type:getDeviceType
           }
@@ -143,6 +144,35 @@
           this.loadingVcode = false
           this.xcodeImg = 'data:image/png;base64,' + btoa(new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), ''))
         })
+      },
+      /**
+       * 校验图形验证码
+       */
+      checkCode(){
+        if(this.xcode==null || this.xcode==""){
+          debugger
+        }else{
+          this.handleCheckVerifyCode({
+            type:'register',
+            phone:this.mobile,
+            code:this.xcode
+          }).then(res=>{
+            if(res.code===20000){
+
+            }else{
+              this.$vux.toast.text(res.msg, 'top')
+            }
+          })
+        }
+      },
+      checkPwd(){
+        debugger
+        if(this.password!==this.repassdword){
+          this.$vux.toast.text('再次密码不一致', 'top');
+          return false;
+        }else{
+          return true;
+        }
       }
     },
     mounted () {
