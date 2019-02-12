@@ -26,7 +26,7 @@
       <x-input placeholder="请输入推荐码(可不填)" v-model="referralCode"></x-input>
     </Group>
     <div class="custom-primary-white_wrpper">
-      <x-button type="primary"  :disabled="BtnDisabled" class="custom-primary-white" @on-click="registerUser">注册</x-button>
+      <x-button type="primary"  class="custom-primary-white" @click.native="registerUser">注册</x-button>
     </div>
 
   </div>
@@ -67,13 +67,38 @@
        * 获取手机验证码
        */
       registerUser(){
+        debugger
+        if(this.mobile==null ||this.mobile=="" || !validateTel(this.mobile)){
+          this.$vux.toast.text('请添写正确的手机号', 'top')
+          return false;
+        }
+        if(this.xcode==null || this.xcode==''){
+          this.$vux.toast.text('请输入图形验证码', 'top');
+          return false;
+        }
+        if(this.mobileCode==null || this.mobileCode==''){
+          this.$vux.toast.text('请输入手机验证码', 'top');
+          return false;
+        }
+        if(!this.checkPwd()){
+          return false;
+        }
+        let type="";
+        let getType=getDeviceType()
+        if(getType=='ios'){
+          type=3;
+        }else if(getType=='android'){
+          type=2;
+        }else{
+          type=1;
+        }
         this.handleRegister(
           {
             phone:this.mobile,
             loginPassword:this.password,
             inviteCode:this.xcode,
             code:this.mobileCode,
-            type:getDeviceType
+            type:type
           }
         ).then(res=>{
           if(res.code===20000){
@@ -166,12 +191,17 @@
         }
       },
       checkPwd(){
-        debugger
         if(this.password!==this.repassdword){
           this.$vux.toast.text('再次密码不一致', 'top');
           return false;
         }else{
-          return true;
+          if(this.password==null || this.password=='' || this.repassdword==null || this.repassdword==''){
+            this.$vux.toast.text('密码不能为空', 'top');
+            return false;
+          }else{
+            return true;
+          }
+
         }
       }
     },
