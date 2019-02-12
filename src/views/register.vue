@@ -96,9 +96,10 @@
           {
             phone:this.mobile,
             loginPassword:this.password,
-            inviteCode:this.xcode,
+            inviteCode:this.referralCode,
             code:this.mobileCode,
-            type:type
+            type:'register',
+            registerType:type,
           }
         ).then(res=>{
           if(res.code===20000){
