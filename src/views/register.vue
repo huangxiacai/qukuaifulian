@@ -64,7 +64,7 @@
         'handleRegister'
       ]),
       /**
-       * 获取手机验证码
+       * 注册
        */
       registerUser(){
         debugger
@@ -113,43 +113,31 @@
         let vm = this
         //先校验手机号
         if (validateTel(this.mobile)) {
-          //获取签名接口
-          this.handleGetKey({}).then(res => {
+          if(this.xcode==null || this.xcode==''){
+            this.$vux.toast.text('请填写图形验证码', 'top')
+            return false;
+          }
+          //获取手机验证码
+          this.handleGenerateSmsCode({
+            phone:this.mobile,
+            type:'register',
+            code:this.xcode
+          }).then(res => {
             if (res.code === 20000) {
-              //调用发送验证码接口
-              let baseurl = process.env.NODE_ENV !== 'production' ? config.baseUrl.dev : config.baseUrl.pro
-              this.$http.post(baseurl + '/' + common.generateSmsCode,
-                {
-                  mobile: vm.mobile,
-                  type: 'register',
-                }, {
-                  headers: {
-                    sign: res.data,
-                    'Content-Type': "application/x-www-form-urlencoded;charset=UTF-8",//+stringify
-                  }
-                }).then(r => {
-                if (r.data.code === 20000) {
-                  this.timelen = 60
-                  this.$vux.toast.text('验证码发送成功', 'top')
-                  setInterval(function () {
-                    if (vm.timelen === 0) {
-                      vm.isGetMobileCode = true
-                      vm.getMoblieText = '发送验证码'
-                    } else {
-                      vm.timelen--
-                    }
-                  }, 1000)
+              this.timelen = 60;
+              this.$vux.toast.text('验证码发送成功', 'top');
+              setInterval(function () {
+                if (vm.timelen === 0) {
+                  vm.isGetMobileCode = true;
+                  vm.getMoblieText = '发送验证码'
+                } else {
+                  vm.timelen--
                 }
-                else {
-                  this.$vux.toast.text('获取验证码失败', 'top')
-                }
-              })
-
-            } else {
-              this.$vux.toast.text('签名失败', 'top')
+              }, 1000)
+          }else{
+              this.$vux.toast.text(res.msg, 'top');
             }
           })
-
         } else {
           //
           this.$vux.toast.text('请填写的手机号', 'top')
@@ -177,17 +165,17 @@
         if(this.xcode==null || this.xcode==""){
           debugger
         }else{
-          this.handleCheckVerifyCode({
-            type:'register',
-            phone:this.mobile,
-            code:this.xcode
-          }).then(res=>{
-            if(res.code===20000){
-
-            }else{
-              this.$vux.toast.text(res.msg, 'top')
-            }
-          })
+          // this.handleCheckVerifyCode({
+          //   type:'register',
+          //   phone:this.mobile,
+          //   code:this.xcode
+          // }).then(res=>{
+          //   if(res.code===20000){
+          //
+          //   }else{
+          //     this.$vux.toast.text(res.msg, 'top')
+          //   }
+          // })
         }
       },
       checkPwd(){
