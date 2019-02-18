@@ -36,7 +36,7 @@
   import {mapActions} from 'vuex'
   import config from '../config/index'
   import {common} from '../api/config'
-  import {validateTel,getDeviceType} from '../libs/util'
+  import {validateTel,getDeviceType,getUrlKey} from '../libs/util'
   export default {
     name: 'register',
     data () {
@@ -195,6 +195,10 @@
       }
     },
     mounted () {
+      let code=getUrlKey('code');
+      if(code){
+        this.referralCode=code
+      }
 
     },
     created () {
