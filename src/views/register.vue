@@ -104,6 +104,22 @@
         ).then(res=>{
           if(res.code===20000){
             this.$vux.toast.text('注册成功', 'top')
+            //判断操作系统是android还是ｉｏｓ
+            var u = navigator.userAgent, app = navigator.appVersion;
+            var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Linux') > -1; //g
+            var isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+            if (isAndroid) {
+              //这个是安卓操作系统
+              window.setTimeout(function(){
+                window.location.href="https://fir.im/456d";
+              },2000)
+            }
+            if (isIOS) {
+              //这个是ios操作系统
+              window.setTimeout(function(){
+                window.location.href="https://fir.im/fk28";
+              },2000)
+            }
           }else{
             this.$vux.toast.text(res.msg, 'top')
           }
@@ -125,14 +141,16 @@
             code:this.xcode
           }).then(res => {
             if (res.code === 20000) {
-              this.timelen = 60;
+              this.isGetMobileCode=true;
+              this.timelen = 120;
               this.$vux.toast.text('验证码发送成功', 'top');
               setInterval(function () {
                 if (vm.timelen === 0) {
-                  vm.isGetMobileCode = true;
+                  vm.isGetMobileCode = false;
                   vm.getMoblieText = '发送验证码'
                 } else {
-                  vm.timelen--
+                  vm.timelen--;
+                  vm.getMoblieText = vm.timelen+'s';
                 }
               }, 1000)
           }else{
