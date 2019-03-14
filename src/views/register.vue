@@ -111,13 +111,13 @@
             if (isAndroid) {
               //这个是安卓操作系统
               window.setTimeout(function(){
-                window.location.href="https://fir.im/456d";
+                window.location.href="https://www.pgyer.com/SgII";
               },2000)
             }
             if (isIOS) {
               //这个是ios操作系统
               window.setTimeout(function(){
-                window.location.href="https://fir.im/fk28";
+                window.location.href="https://www.pgyer.com/1KP3";
               },2000)
             }
           }else{
